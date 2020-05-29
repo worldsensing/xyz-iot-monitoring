@@ -1,0 +1,185 @@
+version: '3.7'
+
+networks:
+  kong-net:
+    driver: bridge
+  kong-ext-net:
+    driver: bridge
+  api-net:
+    driver: bridge
+
+volumes:
+  kong_data: {}
+
+services:
+  # Database
+  postgres:
+    image: postgres:11.7-alpine
+    volumes:
+      - /var/opt/api/pg_data:/var/lib/postgresql/data/pgdata
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
+    networks:
+      - api-net
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure
+
+  # Database viewer
+  pgadmin:
+    image: dpage/pgadmin4:4.19
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    depends_on:
+      - postgres
+    restart: on-failure
+    ports:
+      - "5433:80"
+
+  # Backend
+  backend_demo_api:
+    build:
+      context: ${PWD}/apis/demo_api
+      dockerfile: Dockerfile
+    env_file:
+      - apis/demo_api/ENV/api.env
+    depends_on:
+      - kong
+      - postgres
+    networks:
+      - kong-ext-net
+      - api-net
+    restart: on-failure
+
+  # Frontend
+  frontend_demo:
+    build:
+      context: ${PWD}/frontend/nginx
+      dockerfile: Dockerfile
+    depends_on:
+      - kong
+    networks:
+      - kong-ext-net
+    restart: on-failure
+
+  # Grafana
+  grafana:
+    build:
+      context: ${PWD}/frontend/grafana
+      dockerfile: Dockerfile
+    env_file:
+      - frontend/grafana/ENV/deploy.env
+    volumes:
+      - ./frontend/grafana/ENV/grafana.ini:/etc/grafana/grafana.ini
+    depends_on:
+      - postgres
+    ports: # For testing
+      - "3001:3000"
+    networks:
+      - kong-ext-net
+      - api-net
+    restart: on-failure
+
+  # Nodered
+  node-red:
+    image: vimagick/node-red
+    environment:
+      - TZ=Europe/Madrid
+    volumes:
+      - ./nodered/data:/data
+    depends_on:
+      - postgres
+    ports: # For testing
+      - "1880:1880"
+    networks:
+      - kong-ext-net
+      - api-net
+    restart: on-failure
+
+  #######################################
+  # Kong - API Gateway
+  #######################################
+  kong:
+    image: kong:2.0.1-alpine
+    environment:
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=kong-db
+      - KONG_PG_DATABASE=kong_db
+      - KONG_PG_USER=kong
+    depends_on:
+      - kong-db
+      - kong-migrations-up
+    ports:
+      - "8000:8000/tcp"
+      - "8001:8001/tcp"
+      - "8443:8443/tcp"
+      - "8444:8444/tcp"
+    networks:
+      - kong-net
+      - kong-ext-net
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    restart: on-failure
+
+  kong-db:
+    image: postgres:9.5
+    environment:
+      - POSTGRES_DB=kong_db
+      - POSTGRES_USER=kong
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+    stdin_open: true
+    tty: true
+    networks:
+      - kong-net
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "kong"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure
+
+  kong-migrations:
+    image: kong:2.0.1-alpine
+    command: "kong migrations bootstrap"
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=kong-db
+      - KONG_PG_DATABASE=kong_db
+      - KONG_PG_USER=kong
+    depends_on:
+      - kong-db
+    networks:
+      - kong-net
+    restart: on-failure
+
+  kong-migrations-up:
+    image: kong:2.0.1-alpine
+    command: "kong migrations up && kong migrations finish"
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=kong-db
+      - KONG_PG_DATABASE=kong_db
+      - KONG_PG_USER=kong
+    depends_on:
+      - kong-db
+      - kong-migrations
+    networks:
+      - kong-net
+    restart: on-failure

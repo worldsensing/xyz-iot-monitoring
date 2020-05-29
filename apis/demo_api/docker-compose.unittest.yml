@@ -1,0 +1,24 @@
+version: '3.7'
+
+networks:
+  unittests:
+
+services:
+  # Database
+  postgres:
+    image: postgres:11.7-alpine
+    volumes:
+      - /var/opt/api_test/pg_data:/var/lib/postgresql/data/pgdata
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
+    networks:
+      - unittests
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure

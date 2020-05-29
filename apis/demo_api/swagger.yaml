@@ -1,0 +1,638 @@
+openapi: 3.0.0
+info:
+  description:
+    This is the API documentation for the Sensors API in the PhD - Marc Vila.
+  version: 1.0.0
+  title: Sensors API
+tags:
+  - name: device-categories
+    description: Information of a DeviceCategory. This is the category of the
+      Device, so it affects the Event type.
+  - name: devices
+    description: Information of a Device. This is the metadata of a Device/sensor.
+  - name: events
+    description: Reading data from a Device.
+  - name: business-rules
+    description: Business Rules for a Devices. Queries to be triggered automatically.
+  - name: locations
+    description: Location for the Devices.
+externalDocs:
+  description: Source code (GitHub - Private)
+  url: 'https://github.com/LaQuay/phd_deployment/tree/master/apis/demo_api/'
+paths:
+  '/device-categories':
+    get:
+      tags:
+        - device-categories
+      summary: Get all the Device Categories
+      description: ''
+      operationId: getAllDeviceCategories
+      responses:
+        '200':
+          description: 'Array containing device_categories objects'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceCategory'
+    post:
+      tags:
+        - device-categories
+      summary: Create a new DeviceCategory
+      description: ''
+      operationId: addDeviceCategory
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: device category name exist
+        '422':
+          description: invalid device category
+      requestBody:
+        $ref: '#/components/requestBodies/DeviceCategory'
+  '/device-categories/{device-category-name}/':
+    get:
+      tags:
+        - device-categories
+      summary: Get a DeviceCategory
+      description: ''
+      operationId: getDeviceCategory
+      parameters:
+        - in: path
+          name: device-category-name
+          description: DeviceCategory object queried
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Succesful operation - Returning DeviceCategory object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCategory'
+        '404':
+          description: device category name does not exists
+    put:
+      tags:
+        - device-categories
+      summary: Update a DeviceCategory
+      description: ''
+      operationId: putDeviceCategory
+      parameters:
+        - in: path
+          name: device-category-name
+          description: device-category object that needs to be modified
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: device category name does not exist
+        '422':
+          description: invalid device
+      requestBody:
+        $ref: '#/components/requestBodies/DeviceCategory'
+    delete:
+      tags:
+        - device-categories
+      summary: Delete a DeviceCategory
+      description: 'Only if no Device is using this category'
+      operationId: deleteDeviceCategory
+      parameters:
+        - in: path
+          name: device-category-name
+          description: device category object that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: device category cannot be deleted, a Device is using it
+        '404':
+          description: device category name does not exist
+  '/devices':
+    get:
+      tags:
+        - devices
+      summary: Get all the Devices
+      description: ''
+      operationId: getAllDevices
+      responses:
+        '200':
+          description: 'Array containing devices objects'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+    post:
+      tags:
+        - devices
+      summary: Create a new Device
+      description: ''
+      operationId: addDevice
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: device name exist
+        '422':
+          description: invalid device
+      requestBody:
+        $ref: '#/components/requestBodies/Device'
+  '/devices/{device-name}/':
+    get:
+      tags:
+        - devices
+      summary: Get a Device
+      description: ''
+      operationId: getDevice
+      parameters:
+        - in: path
+          name: device-name
+          description: Device object queried
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Succesful operation - Returning Device object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: device name does not exists
+    put:
+      tags:
+        - devices
+      summary: Update a Device
+      description: ''
+      operationId: putDevice
+      parameters:
+        - in: path
+          name: device-name
+          description: device object that needs to be modified
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: device name does not exist
+        '422':
+          description: invalid device
+      requestBody:
+        $ref: '#/components/requestBodies/Device'
+    delete:
+      tags:
+        - devices
+      summary: Delete a Device
+      description: 'If will also delete all the Events of this Device'
+      operationId: deleteDevice
+      parameters:
+        - in: path
+          name: device-name
+          description: device object that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: device name does not exist
+  '/devices/{device-name}/events/':
+    get:
+      tags:
+        - devices
+      summary: Get all the Events of a Device
+      description: ''
+      operationId: getAllDeviceEvents
+      parameters:
+        - in: path
+          name: device-name
+          description: Device object queried
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Array containing events objects'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/event_a'
+                    - $ref: '#/components/schemas/event_b'
+        '404':
+          description: device name does not exists
+  '/events':
+    get:
+      tags:
+        - events
+      summary: Get all the events
+      description: ''
+      operationId: getAllEvents
+      responses:
+        '200':
+          description: 'Array containing events objects'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/event_a'
+                    - $ref: '#/components/schemas/event_b'
+    post:
+      tags:
+        - events
+      summary: Create a new event
+      description: ''
+      operationId: addEvent
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: event name exist
+        '422':
+          description: invalid event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                oneOf:
+                  - $ref: '#/components/schemas/event_a'
+                  - $ref: '#/components/schemas/event_b'
+  '/events/{event-name}/':
+    get:
+      tags:
+        - events
+      summary: Get a event
+      description: ''
+      operationId: getEvent
+      parameters:
+        - in: path
+          name: event-name
+          description: event object queried
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Succesful operation - Returning event object
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/event_a'
+                  - $ref: '#/components/schemas/event_b'
+        '404':
+          description: event name does not exists
+    delete:
+      tags:
+        - events
+      summary: Delete a event
+      description: ''
+      operationId: deleteEvent
+      parameters:
+        - in: path
+          name: event-name
+          description: event object that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: event id does not exist
+  '/business-rules':
+    get:
+      tags:
+        - business-rules
+      summary: Get all the Business Rules
+      description: ''
+      operationId: getAllBusinessRules
+      responses:
+        '200':
+          description: 'Array containing business_rule objects'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BusinessRule'
+    post:
+      tags:
+        - business-rules
+      summary: Create a new BusinessRule
+      description: ''
+      operationId: addBusinessRule
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: business rule name exist
+        '422':
+          description: invalid business rule
+      requestBody:
+        $ref: '#/components/requestBodies/BusinessRule'
+  '/business-rules/{business-rule-name}/':
+    get:
+      tags:
+        - business-rules
+      summary: Get a BusinessRule
+      description: ''
+      operationId: getBusinessRule
+      parameters:
+        - in: path
+          name: business-rule-name
+          description: BusinessRule object queried
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Succesful operation - Returning BusinessRule object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessRule'
+        '404':
+          description: business-rule name does not exists
+    put:
+      tags:
+        - business-rules
+      summary: Update a BusinessRule
+      description: ''
+      operationId: putBusinessRule
+      parameters:
+        - in: path
+          name: business-rule-name
+          description: business-rule object that needs to be modified
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: business rule name does not exist
+        '422':
+          description: invalid business rule
+      requestBody:
+        $ref: '#/components/requestBodies/BusinessRule'
+    delete:
+      tags:
+        - business-rules
+      summary: Delete a BusinessRule
+      description: ''
+      operationId: deleteBusinessRule
+      parameters:
+        - in: path
+          name: business-rule-name
+          description: business rule object that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: business rule name does not exist
+  '/locations':
+    get:
+      tags:
+        - locations
+      summary: Get all the Locations
+      description: ''
+      operationId: getLocations
+      responses:
+        '200':
+          description: 'Array containing location objects'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+    post:
+      tags:
+        - locations
+      summary: Create a new Location
+      description: ''
+      operationId: addLocation
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: location name exist
+        '422':
+          description: invalid location
+      requestBody:
+        $ref: '#/components/requestBodies/Location'
+  '/locations/{location-name}/':
+    get:
+      tags:
+        - locations
+      summary: Get a Location
+      description: ''
+      operationId: getLocation
+      parameters:
+        - in: path
+          name: location-name
+          description: Location object queried
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Succesful operation - Returning Location object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '404':
+          description: location name does not exists
+    put:
+      tags:
+        - locations
+      summary: Update a Location
+      description: ''
+      operationId: putLocation
+      parameters:
+        - in: path
+          name: location-name
+          description: location object that needs to be modified
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: location name does not exist
+        '422':
+          description: invalid location
+      requestBody:
+        $ref: '#/components/requestBodies/Location'
+    delete:
+      tags:
+        - locations
+      summary: Delete a Location
+      description: ''
+      operationId: deleteLocation
+      parameters:
+        - in: path
+          name: location-name
+          description: location object that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          description: location name does not exist
+servers:
+  - url: 'http://localhost:8000/api/'
+components:
+  requestBodies:
+    DeviceCategory:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DeviceCategory'
+      description: device category object
+      required: true
+    Device:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Device'
+      description: device object
+      required: true
+    Event:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Event'
+      description: event object
+      required: true
+    BusinessRule:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BusinessRule'
+      description: business-rule object
+      required: true
+    Location:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Location'
+      description: location object
+      required: true
+  schemas:
+    DeviceCategory:
+      type: object
+      required:
+        - name
+        - data_type
+      properties:
+        name:
+          type: string
+          example: "Inclinometer"
+        data_type:
+          type: string
+          example: "event_a"
+      xml:
+        name: DeviceCategory
+    Device:
+      type: object
+      required:
+        - name
+        - category
+      properties:
+        name:
+          type: string
+          example: "ABC-1002"
+        category:
+          $ref: '#/components/schemas/DeviceCategory/properties/name'
+        location:
+          $ref: '#/components/schemas/Location/properties/name'
+      xml:
+        name: Device
+    Event:
+      type: object
+      required:
+        - device_name
+        - value
+        - date
+      properties:
+        device_name:
+          $ref: '#/components/schemas/Device/properties/name'
+        datetime:
+          type: string
+          format: date-time
+          example: "2020-03-13T19:17:12+00:00"
+    event_a:
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          properties:
+            value:
+              type: string
+              example: "0.1222"
+    event_b:
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          properties:
+            value:
+              type: number
+              example: 0.1222
+      xml:
+        name: Event
+    BusinessRule:
+      type: object
+      required:
+        - name
+        - query
+      properties:
+        name:
+          type: string
+          example: "BR1"
+        query:
+          type: string
+          example: "SELECT * FROM EVENT WHERE device_name = 'ABC-1001' AND value > 1"
+        executing:
+          type: boolean
+          example: true
+    Location:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "MyLocation1"
+        latlng:
+          type: string
+          example: "41.2, 2.1"
+      xml:
+        name: Device

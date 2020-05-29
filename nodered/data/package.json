@@ -1,0 +1,12 @@
+{
+    "name": "node-red-project",
+    "description": "A Node-RED Project",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "node-red-contrib-loop-processing": "^0.4.0",
+        "node-red-contrib-re-postgres": "^0.2.2",
+        "node-red-node-daemon": "^0.1.0",
+        "node-red-node-irc": "0.0.8"
+    }
+}

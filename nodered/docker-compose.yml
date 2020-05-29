@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  # Nodered
+  node-red:
+    image: vimagick/node-red
+    environment:
+      - TZ=Europe/Madrid
+    volumes:
+      - ./data:/data
+    depends_on:
+      - postgres
+    ports:
+      - "1880:1880"
+    networks:
+      - private
+    restart: on-failure
+
+  # Database
+  postgres:
+    image: postgres:11.7-alpine
+    volumes:
+      - /var/opt/api_local/pg_data:/var/lib/postgresql/data/pgdata
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
+    networks:
+      - private
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure
+
+networks:
+  private:
+    driver: bridge

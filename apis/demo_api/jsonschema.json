@@ -1,0 +1,188 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "",
+  "description": "",
+  "type": "object",
+  "definitions": {
+    "device_category": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Inclinometer"
+        },
+        "data_type": {
+          "type": "string",
+          "enum": [
+            "event_a",
+            "event_b"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "data_type"
+      ]
+    },
+    "device": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "ABC-1001"
+        },
+        "category": {
+          "type": "string",
+          "$ref": "#/definitions/device_category/properties/name"
+        },
+        "location": {
+          "type": "string",
+          "$ref": "#/definitions/location/properties/name"
+        }
+      },
+      "required": [
+        "name",
+        "category"
+      ]
+    },
+    "event": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "device_name": {
+          "type": "string",
+          "$ref": "#/definitions/device/properties/name"
+        },
+        "datetime": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2020-04-01T10:54:03+00:00"
+        }
+      },
+      "required": [
+        "device_name",
+        "datetime"
+      ]
+    },
+    "event_a": {
+      "description": "",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/event"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "string",
+              "example": "1"
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "event_b": {
+      "description": "",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/event"
+        },
+        {
+          "properties": {
+            "value": {
+              "type": "number",
+              "example": 1.0
+            }
+          },
+          "required": [
+            "value"
+          ]
+        }
+      ]
+    },
+    "business_rule": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "BusinessRule1"
+        },
+        "query": {
+          "type": "string",
+          "example": "SELECT * FROM Event where device_name = 'ABC-1001'"
+        },
+        "executing": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "name",
+        "query"
+      ]
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Apartment"
+        },
+        "latlng": {
+          "type": "string",
+          "example": "41.2, 2.1"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  "properties": {
+    "device_category": {
+      "description": "",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/device_category"
+      }
+    },
+    "device": {
+      "description": "A device/sensor to be monitored",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/device"
+      }
+    },
+    "event": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "title": "event_a",
+            "$ref": "#/definitions/event_a"
+          },
+          {
+            "title": "event_b",
+            "$ref": "#/definitions/event_b"
+          }
+        ]
+      }
+    },
+    "business_rule": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/business_rule"
+      }
+    },
+    "location": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/location"
+      }
+    }
+  }
+}
