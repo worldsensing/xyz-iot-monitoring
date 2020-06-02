@@ -7,6 +7,8 @@ Main purpose of our system: to monitor IoT devices so that it can automatically 
 
 _(Section under construction)_
 
+![Devices frontend with Grafana](https://github.com/worldsensing/xyz-iot-monitoring/blob/master/extra/frontend_devices_mod.png?raw=true)
+
 ## Architecture
 Microservices based, with Docker and Docker compose.
 
