@@ -1,7 +1,7 @@
-XYZ: IoT Monitoring of Infraestructures using Microservices
+XYZ: IoT Monitoring of Infrastructures using Microservices
 ===================
 
-Main repository for the _XYZ: IoT Monitoring of Infraestructures using Microservices_ project.
+Main repository for the _XYZ: IoT Monitoring of Infrastructures using Microservices_ project.
 
 Main purpose of our system: to monitor IoT devices so that it can automatically react and notify when a given alarm is detected. Handle alarms that are defined by means of business rules and allow setting ontological requirements over the information handled.
 
